@@ -196,7 +196,7 @@ html:has(dialog#viewer[open]) { overflow: hidden; scrollbar-gutter: stable; }
 dialog#viewer { overscroll-behavior: contain; touch-action: pinch-zoom; }
 dialog#viewer form { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .close { font: inherit; padding: 6px 14px; background: var(--page); color: var(--ink); border: 1px solid var(--ink); border-radius: 4px; cursor: pointer; }
-.viewer-scroll { overflow: auto; max-height: 76vh; border: 1px solid var(--line); touch-action: pinch-zoom pan-x pan-y; overscroll-behavior: contain; }
+.viewer-scroll { overflow: auto; max-height: 76vh; border: 1px solid var(--line); touch-action: pan-x pan-y; overscroll-behavior: contain; }
 .viewer-scroll img { display: block; max-width: none; }
 .viewer-caption { font-size: 0.92rem; color: var(--muted); margin-top: 8px; }
 
