@@ -19,6 +19,8 @@ if (viewer && typeof viewer.showModal === "function") {
     link.addEventListener("click", (event) => {
       event.preventDefault();
       const figure = link.closest("figure");
+      cancelAnimationFrame(animation);
+      lastTap = null;
       image.removeAttribute("style");
       box.removeAttribute("style");
       image.src = link.href;
@@ -32,7 +34,43 @@ if (viewer && typeof viewer.showModal === "function") {
     if (event.target === viewer) viewer.close();
   });
 
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let animation = 0;
   let pinch = null;
+  let tap = null; // the current one-finger touch
+  let lastTap = null; // where and when the previous tap ended
+  const limits = () => {
+    if (!box.style.height) box.style.height = `${box.offsetHeight}px`;
+    const fit = Math.min(image.naturalWidth, box.clientWidth, (box.clientHeight * image.naturalWidth) / image.naturalHeight);
+    return { fit, max: image.naturalWidth * 2 };
+  };
+  const zoomTo = (width, x, y, fx, fy) => {
+    image.style.maxWidth = "none";
+    image.style.height = "auto";
+    image.style.marginInline = "auto";
+    image.style.width = `${width}px`;
+    const rect = image.getBoundingClientRect();
+    box.scrollLeft += rect.left - (x - fx * rect.width);
+    box.scrollTop += rect.top - (y - fy * rect.height);
+  };
+  const toggleZoom = (x, y) => {
+    const { fit } = limits();
+    const rect = image.getBoundingClientRect();
+    const from = rect.width;
+    const to = from < image.naturalWidth - 1 ? image.naturalWidth : fit;
+    if (Math.abs(to - from) < 1) return;
+    const clamp = (n) => Math.min(1, Math.max(0, n));
+    const fx = clamp((x - rect.left) / rect.width);
+    const fy = clamp((y - rect.top) / rect.height);
+    if (reduceMotion.matches) return zoomTo(to, x, y, fx, fy);
+    const start = performance.now();
+    const step = (time) => {
+      const progress = Math.min(1, (time - start) / 250);
+      zoomTo(from + (to - from) * (1 - (1 - progress) ** 3), x, y, fx, fy);
+      if (progress < 1) animation = requestAnimationFrame(step);
+    };
+    animation = requestAnimationFrame(step);
+  };
   const fingers = (touches) => {
     const [a, b] = touches;
     return {
@@ -42,37 +80,43 @@ if (viewer && typeof viewer.showModal === "function") {
     };
   };
   box.addEventListener("touchstart", (event) => {
+    cancelAnimationFrame(animation);
+    const [first] = event.touches;
+    tap = event.touches.length === 1 ? { x: first.clientX, y: first.clientY, moved: false } : null;
     if (event.touches.length !== 2 || !image.naturalWidth) return;
     const start = fingers(event.touches);
     const rect = image.getBoundingClientRect();
-    if (!box.style.height) box.style.height = `${box.offsetHeight}px`;
-    const fitHeight = box.clientHeight;
     pinch = {
       ...start,
+      ...limits(),
       width: rect.width,
       fx: (start.x - rect.left) / rect.width,
       fy: (start.y - rect.top) / rect.height,
-      min: Math.min(image.naturalWidth, box.clientWidth, (fitHeight * image.naturalWidth) / image.naturalHeight),
-      max: image.naturalWidth * 2,
     };
   }, { passive: true });
   box.addEventListener("touchmove", (event) => {
+    const [first] = event.touches;
+    if (tap && Math.hypot(first.clientX - tap.x, first.clientY - tap.y) > 10) tap.moved = true;
     if (!pinch || event.touches.length !== 2) return;
     event.preventDefault();
     const now = fingers(event.touches);
-    const width = Math.min(pinch.max, Math.max(pinch.min, (pinch.width * now.distance) / pinch.distance));
-    image.style.maxWidth = "none";
-    image.style.height = "auto";
-    image.style.marginInline = "auto";
-    image.style.width = `${width}px`;
-    const rect = image.getBoundingClientRect();
-    box.scrollLeft += rect.left - (now.x - pinch.fx * rect.width);
-    box.scrollTop += rect.top - (now.y - pinch.fy * rect.height);
+    zoomTo(Math.min(pinch.max, Math.max(pinch.fit, (pinch.width * now.distance) / pinch.distance)), now.x, now.y, pinch.fx, pinch.fy);
   }, { passive: false });
   box.addEventListener("touchend", (event) => {
     if (event.touches.length < 2) pinch = null;
-  });
-  box.addEventListener("touchcancel", () => { pinch = null; });
+    const ended = tap;
+    tap = null;
+    if (!ended || ended.moved || event.touches.length || !image.naturalWidth) return;
+    const time = performance.now();
+    if (lastTap && time - lastTap.time < 300 && Math.hypot(ended.x - lastTap.x, ended.y - lastTap.y) < 30) {
+      lastTap = null;
+      event.preventDefault(); // no click or mouse events from the second tap
+      toggleZoom(ended.x, ended.y);
+    } else {
+      lastTap = { x: ended.x, y: ended.y, time };
+    }
+  }, { passive: false });
+  box.addEventListener("touchcancel", () => { pinch = null; tap = null; });
   box.addEventListener("gesturestart", (event) => event.preventDefault());
 }
 
