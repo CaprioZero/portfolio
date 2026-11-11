@@ -40,6 +40,20 @@ if (demo && "IntersectionObserver" in window && !window.matchMedia("(prefers-red
   ).observe(demo);
 }
 
+[
+  [".up-contents", ".toc ul"],
+  [".up-top", ".hero"],
+].forEach(([linkSelector, targetSelector]) => {
+  const link = document.querySelector(linkSelector);
+  const target = document.querySelector(targetSelector);
+  if (!link || !target) return;
+  const update = () => {
+    link.hidden = target.getBoundingClientRect().bottom > 0;
+  };
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+});
+
 const links = new Map();
 document.querySelectorAll(".toc a").forEach((a) => links.set(a.getAttribute("href").slice(1), a));
 if ("IntersectionObserver" in window && links.size) {

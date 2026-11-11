@@ -170,6 +170,19 @@ figcaption { font-size: 0.92rem; color: var(--muted); margin-top: 8px; max-width
 .job h3 { font-size: 1.08rem; }
 .job .when { font-family: var(--mono); font-size: 0.86rem; color: var(--muted); margin: 2px 0 6px; }
 
+.up {
+  position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 5;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 8px 16px;
+  background: var(--page); color: var(--ink); border: 1px solid var(--ink); border-radius: 999px;
+  font-size: 0.92rem; font-weight: 600; text-decoration: none; box-shadow: 0 2px 8px rgba(23, 25, 28, 0.18);
+}
+.up:hover { background: var(--pass-tint); }
+.up[hidden], .up.up-top { display: none; }
+@media (min-width: 1000px) {
+  .up.up-contents { display: none; }
+  .up.up-top:not([hidden]) { display: inline-flex; }
+}
+
 dialog#viewer {
   width: min(96vw, 1500px);
   max-height: 94vh;
@@ -179,9 +192,11 @@ dialog#viewer {
   color: var(--ink);
 }
 dialog#viewer::backdrop { background: rgba(23, 25, 28, 0.7); }
+html:has(dialog#viewer[open]) { overflow: hidden; scrollbar-gutter: stable; }
+dialog#viewer { overscroll-behavior: contain; touch-action: pinch-zoom; }
 dialog#viewer form { display: flex; justify-content: flex-end; margin-bottom: 8px; }
 .close { font: inherit; padding: 6px 14px; background: var(--page); color: var(--ink); border: 1px solid var(--ink); border-radius: 4px; cursor: pointer; }
-.viewer-scroll { overflow: auto; max-height: 76vh; border: 1px solid var(--line); touch-action: pinch-zoom pan-x pan-y; }
+.viewer-scroll { overflow: auto; max-height: 76vh; border: 1px solid var(--line); touch-action: pinch-zoom pan-x pan-y; overscroll-behavior: contain; }
 .viewer-scroll img { display: block; max-width: none; }
 .viewer-caption { font-size: 0.92rem; color: var(--muted); margin-top: 8px; }
 
@@ -206,7 +221,7 @@ dialog#viewer form { display: flex; justify-content: flex-end; margin-bottom: 8p
 }
 
 @media print {
-  .toc, .reveal, dialog, .skip { display: none !important; }
+  .toc, .reveal, dialog, .skip, .up { display: none !important; }
   body { font-size: 11pt; }
   .hero, main section { padding: 14pt 0; }
   main section { break-inside: auto; }

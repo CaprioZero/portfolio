@@ -72,7 +72,7 @@
 </header>
 
 <div class="wrap layout">
-  <nav class="toc" aria-label="On this page">
+  <nav class="toc" id="contents" aria-label="On this page">
     <ul>
       <li><a href="#experience">Experience</a></li>
       <li><a href="#automation">Test automation</a></li>
@@ -409,6 +409,7 @@
       <div class="shots">
         <figure class="demo">
           <video controls muted loop playsinline preload="none" width="400" height="800" poster="images/write_it_chinese_demo-poster.webp" aria-label="Screen recording of the Write it: Chinese app. The prompt says I'm Vietnamese. Five characters are written by hand, one at a time, each is recognised, and the answer is marked correct.">
+            <source src="images/write_it_chinese_demo.mp4" type="video/mp4">
             <source src="images/write_it_chinese_demo.webm" type="video/webm">
           </video>
           <figcaption>A 25-second recording with no sound. The challenge asks for "I'm Vietnamese." in Chinese. Each handwritten character is recognised after a short pause, and the answer <span lang="zh-Hans">我是越南人</span> is marked correct. The strokes are drawn by a Playwright script that adds a hand's wobble.</figcaption>
@@ -433,6 +434,9 @@
 
   </main>
 </div>
+
+<a class="up up-contents" href="#contents" hidden><span aria-hidden="true">↑</span> <span class="vh">Back to </span>Contents</a>
+<a class="up up-top" href="#top" hidden><span aria-hidden="true">↑</span> <span class="vh">Back to </span>Top</a>
 
 <dialog id="viewer" aria-label="Full screenshot">
   <form method="dialog"><button class="close">Close</button></form>
