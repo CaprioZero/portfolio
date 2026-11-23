@@ -1,3 +1,12 @@
+let closedNotes = [];
+window.addEventListener("beforeprint", () => {
+  closedNotes = [...document.querySelectorAll("details.note:not([open])")];
+  closedNotes.forEach((note) => { note.open = true; });
+});
+window.addEventListener("afterprint", () => {
+  closedNotes.forEach((note) => { note.open = false; });
+});
+
 document.querySelectorAll(".reveal").forEach((button) => {
   button.addEventListener("click", () => {
     const address = `${button.dataset.u}@${button.dataset.d}`;
